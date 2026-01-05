@@ -1,0 +1,26 @@
+name: cattle-pan-sv-imp
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - bcftools>=1.17
+  - htslib>=1.17
+  - samtools>=1.17
+  - tabix
+  - vcftools
+  - plink=1.90
+  - plink2
+  - openjdk>=17
+  - r-base>=4.3
+  - r-data.table
+  - r-ggplot2
+  - r-dplyr
+  - r-tidyr
+  - r-readr
+  - r-optparse
+  - pip
+  - pip:
+      - pandas
+      - numpy
