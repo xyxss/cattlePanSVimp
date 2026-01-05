@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the accompanying manuscript."
+type: software
+title: "Cattle pangenome SV imputation workflows"
+authors:
+  - family-names: "Yang"
+    given-names: "Liu"
+repository-code: "https://github.com/<ORG>/<REPO>"
+license: MIT
+date-released: "2025-12-30"
+keywords:
+  - pangenome
+  - structural variation
+  - imputation
+  - cattle
+  - PanGenie
+  - bcftools
+  - plink
