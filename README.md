@@ -46,20 +46,6 @@ export REF_FA=$PROJECT_ROOT/ref/ARS_UCD_v2.0.fa
 
 Because these scripts are HPC-oriented, typical usage is via `sbatch ... --wrap="bash <script> ..."` as shown within each script.
 
-## Data availability
-
-The manuscript snapshot includes a data-availability statement pointing to a download portal for the imputation panel (see `docs/manuscript_snapshot.docx`, “Availability of data and material”).
-
-This GitHub repository is intended to host **code only**. Large datasets (VCF/BAM/CRAM, panels, etc.) should be hosted externally (e.g., institutional portal, NCBI/ENA, Zenodo, figshare) and linked from the README.
-
-## How to cite
-
-Update `CITATION.cff` with the final repository URL and (once available) the manuscript DOI.
-
-## Contact
-
-- Maintainer: Liu Yang
-
 
 ## Step-by-step (script-by-script)
 
@@ -186,3 +172,19 @@ This repository contains sanitized SLURM/bash pipelines used in the project.
 | `3.GWAS_afImp/run_slemm_mlm.sh` | Run SLEMM mixed model GWAS / related analyses. |
 | `4.GWAS_valid_cdcb173WGS/GWAS_emmax_cdcb.sh` | Run EMMAX GWAS (validation on CDCB 173 WGS). |
 | `4.GWAS_valid_cdcb173WGS/data_pre.sh` | Prepare validation dataset inputs for GWAS. |
+
+
+
+## Data availability
+
+The manuscript snapshot includes a data-availability statement pointing to a download portal for the imputation panel (see `docs/manuscript_snapshot.docx`, “Availability of data and material”).
+
+This GitHub repository is intended to host **code only**. Large datasets (VCF/BAM/CRAM, panels, etc.) should be hosted externally (e.g., institutional portal, NCBI/ENA, Zenodo, figshare) and linked from the README.
+
+## How to cite
+
+Update `CITATION.cff` with the final repository URL and (once available) the manuscript DOI.
+
+## Contact
+
+- Maintainer: Liu Yang
