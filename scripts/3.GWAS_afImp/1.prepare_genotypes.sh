@@ -12,7 +12,6 @@ cd ${PROJECT_ROOT}/hd_gwas/genotypes
 
 
 # WGS SNP yahui 
-seq 1 29 | while read chr; do
 
 
 ls ${DATA_DIR}/data_yahui_2024/umd/imputation/target_pop/hol_bull_imputation/allseq_1kbulls.hol.*.vcf.gz | while read id; do 

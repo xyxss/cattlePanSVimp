@@ -290,7 +290,6 @@ bash ${PROJECT_ROOT}/hd_gwas/genotypes/gcta_fastmlm.sh \
     $pre_gdata $out_pre $trait $cov $pc $ph $grm
 "
 done
-done
 
 
 

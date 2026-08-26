@@ -264,16 +264,17 @@ find scripts -name '*.sh' -exec bash -n {} \;
   `varImp_chunk.sh`, `varImp_mchk.sh`, and `varImp_mchr.sh` have diverged
   slightly. They were not merged here because the differences are real and
   unreviewed — check which copy you are editing.
-- Three scripts do not currently parse and will fail immediately if run as-is.
-  They were used interactively, section by section, rather than executed top to
-  bottom:
-  - `scripts/3.GWAS_afImp/run_gcta_gwas.sh` — one `done` too many (line 292)
-  - `scripts/3.GWAS_afImp/run_plink_gwas.sh` — one `done` too many (line 207)
-  - `scripts/3.GWAS_afImp/1.prepare_genotypes.sh` — unclosed block (EOF at line 113)
-
-  The commands inside them are correct and were what produced the published
-  results; only the surrounding loop structure is unbalanced. Run the relevant
-  section directly, or repair the loop, before using them unattended.
+- Every script now parses (`bash -n` clean). Three had unbalanced loops, since
+  repaired — they had been run interactively, section by section, rather than
+  executed top to bottom:
+  - `run_gcta_gwas.sh` and `run_plink_gwas.sh` carried stray `done` lines. Each
+    submission block opens one loop over traits and closed it twice; the
+    structurally identical blocks elsewhere in the same files close it once.
+  - `1.prepare_genotypes.sh` opened `seq 1 29 | while read chr; do` that was
+    never closed. `$chr` is not referenced anywhere in the file, and the inner
+    loop already iterates over the per-chromosome VCFs directly, so the outer
+    loop was removed rather than closed. Closing it instead would have submitted
+    every job 29 times.
 
 ---
 

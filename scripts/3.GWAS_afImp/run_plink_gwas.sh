@@ -205,7 +205,6 @@ bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
 "
 
 done
-done
 
 
 cd ${PROJECT_ROOT}/hd_gwas/genotypes/5.svImp_svwgs
@@ -244,7 +243,6 @@ bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
     $pre_gdata $out_pre $trait $cov $pc $ph
 "
 
-done
 done
 
 
