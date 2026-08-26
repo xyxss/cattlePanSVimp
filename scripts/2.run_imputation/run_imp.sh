@@ -4,8 +4,8 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${SOFTWARE_DIR:?SOFTWARE_DIR is unset - see config.sh.example at the repository root}"
+: "${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
-
 
 set -eu
 

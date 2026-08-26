@@ -135,14 +135,18 @@ bash 5.cds.check.sh    # coding-sequence overlap checks
 
 ```bash
 cd scripts/2.run_imputation
-bash run_imp.sh        # build the reference panel, then impute
-bash sub_imp.sh        # Slurm submission wrappers
+bash 00.codes/0.refImp.sh   # build and index the Beagle reference panel
+bash run_imp.sh             # chunked imputation driver
+bash sub_imp.sh             # Slurm array submission, with job dependencies
 ```
 
-`00.codes/run.imp.sh` is the driver: it splits the reference and target by
-chromosome, splits samples into chunks, runs Beagle per chunk, then merges back
-across chunks and chromosomes. This chunking is what makes cohorts of tens of
-thousands of animals tractable.
+`run_imp.sh` is the driver. It splits the reference and target by chromosome,
+splits samples into chunks, runs Beagle per chunk, then merges back across
+chunks and chromosomes. That chunking is what makes cohorts of tens of thousands
+of animals tractable.
+
+`sub_imp.sh` is the submission layer: it generates `sbatch` array scripts and
+wires up `--dependency=afterok` so merging only starts once imputation finishes.
 
 ### Stage 3 — GWAS on imputed genotypes
 
@@ -191,10 +195,9 @@ signals found on imputed genotypes hold up against directly sequenced ones.
 
 | Script | Purpose |
 |---|---|
-| `run_imp.sh` | Top-level production imputation runner |
-| `sub_imp.sh` | Slurm submission wrappers |
+| `run_imp.sh` | Chunked imputation driver: per-chromosome and per-sample-chunk Beagle, then merge |
+| `sub_imp.sh` | Slurm array submission with `afterok` dependencies between imputation and merge |
 | `00.codes/0.refImp.sh` | Build and index the Beagle reference panel |
-| `00.codes/run.imp.sh` | Chunked driver: per-chromosome and per-sample-chunk Beagle, then merge |
 | `00.codes/varImp.sh` | Variant imputation driver |
 | `00.codes/varImp_chunk.sh` | Per-chunk variant imputation |
 | `00.codes/varImp_mchk.sh` | Merge across sample chunks |
@@ -256,6 +259,11 @@ find scripts -name '*.sh' -exec bash -n {} \;
 - `scripts/1.imputation_test/00.codes/imp_all.sh` calls `ref2minimac4` twice, in
   two consecutive identical `if` blocks. It is idempotent, so results are
   unaffected, but the second call is wasted work.
+- `2.run_imputation/00.codes/` and `3.GWAS_afImp/00.codes/` hold near-duplicate
+  copies of the `varImp*` drivers. `varImp.sh` is identical between them;
+  `varImp_chunk.sh`, `varImp_mchk.sh`, and `varImp_mchr.sh` have diverged
+  slightly. They were not merged here because the differences are real and
+  unreviewed — check which copy you are editing.
 - Three scripts do not currently parse and will fail immediately if run as-is.
   They were used interactively, section by section, rather than executed top to
   bottom:

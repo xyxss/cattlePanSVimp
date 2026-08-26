@@ -5,7 +5,6 @@
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
 ref_path=${REF_DIR}
 ref_fa=$ref_path/ARS_UCD_v2.0.fa
 ref_rm=${REF_DIR}/ARS_UCD_v2.0.ref_repeat
@@ -81,7 +80,6 @@ function proc_vcf () {
     grp_vcf $in_vcf
     MAF_vcf ${in_vcf/holPub/Holstein}
     typ_vcf ${in_vcf/holPub/Holstein}
-    cp $in_vcf $in_vcf
     echo $in_vcf
 }
 
@@ -156,7 +154,7 @@ bcftools view --threads $nthreads -S holPub.samples \
     bcftools annotate --threads $nthreads --remove QUAL,INFO,FORMAT |
     awk -f $code/addID.awk PG="DV" |
     bgzip -c -@ $nthreads > holPub.deepv.filter.vcf.gz && 
-    tabix -f -p holPub.deepv.filter.vcf.gz
+    tabix -f -p vcf holPub.deepv.filter.vcf.gz
 
 # pangenie-sv with all chromosomes
 bcftools view --threads 4 holPub.pangenie.vcf.gz \
@@ -167,7 +165,7 @@ bcftools view --threads 4 holPub.pangenie.vcf.gz \
 bcftools view --threads 4 -V snps holPub.pangenie.vcf.gz \
     -r $(seq 1 29 | tr '\n' ',') \
     -Oz -o holPub.pangenie-sv.vcf.gz && 
-    tabix -f -p vcf holPub.pangenie-sv3.vcf.gz
+    tabix -f -p vcf holPub.pangenie-sv.vcf.gz
 
 bcftools view --threads 4 -v indels holPub.pangenie.vcf.gz \
     -r $(seq 1 29 | tr '\n' ',') \

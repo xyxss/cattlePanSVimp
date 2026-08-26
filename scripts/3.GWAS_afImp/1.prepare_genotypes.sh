@@ -1,11 +1,11 @@
 # --- site configuration ---
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
-: "${DATA_DIR:?DATA_DIR is unset - see config.sh.example at the repository root}"
-: "${DATA_ROOT:?DATA_ROOT is unset - see config.sh.example at the repository root}"
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${DATA_ROOT:?DATA_ROOT is unset - see config.sh.example at the repository root}"
+: "${DATA_DIR:?DATA_DIR is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
-
 
 mkdir -p ${PROJECT_ROOT}/hd_gwas/genotypes
 cd ${PROJECT_ROOT}/hd_gwas/genotypes

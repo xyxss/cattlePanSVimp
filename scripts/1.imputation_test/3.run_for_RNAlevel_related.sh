@@ -2,8 +2,8 @@
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
-
 
 cd ${PROJECT_ROOT}/imputation/5.rna_shp
 vcf=${PROJECT_ROOT}/pangenie_HiFi/8.rna_all/rna.hifi19.chr.vcf.gz

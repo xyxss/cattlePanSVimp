@@ -3,8 +3,8 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
-
 
 ref_path=${REF_DIR}
 ref_fa=$ref_path/ARS_UCD_v2.0.fa
@@ -298,7 +298,7 @@ done
 ##
 zcat run_files/Holstein750_Thin0k.deepv-snps.chr$chr.vcf.gz | grep -v "#" | cut -f 1-2 > deepv_positions_list.txt
 
-bcftools view --threads $nthreads -T deepv_positions_list.txt run_files/Holstein750_Thin0k.pangenie-snps.chr$chr.vcf.gz -Oz -o run_files/Holstein750_Thin0k.pangenie-deepv.chr$chr.vcf.gz && tabix -f -p vcf run_files/Holstein750_Thin0k.pangenie-deepv.chr10.vcf.gz
+bcftools view --threads $nthreads -T deepv_positions_list.txt run_files/Holstein750_Thin0k.pangenie-snps.chr$chr.vcf.gz -Oz -o run_files/Holstein750_Thin0k.pangenie-deepv.chr$chr.vcf.gz && tabix -f -p vcf run_files/Holstein750_Thin0k.pangenie-deepv.chr$chr.vcf.gz
 
 # 125678 pangenie-deepv
 # 508654 pangenie-snps

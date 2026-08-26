@@ -5,7 +5,6 @@
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
 ref_path=${REF_DIR}
 ref_fa=$ref_path/ARS_UCD_v2.0.fa
 ref_rm=${REF_DIR}/ARS_UCD_v2.0.ref_repeat

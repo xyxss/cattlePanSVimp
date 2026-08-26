@@ -2,8 +2,9 @@
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
+: "${SLURM_PARTITION:?SLURM_PARTITION is unset - see config.sh.example at the repository root}"
 # --------------------------
-
 
 #cat > ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh <<"EOF"
 pre_gdata=$1

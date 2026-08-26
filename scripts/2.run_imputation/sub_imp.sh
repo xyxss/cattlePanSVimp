@@ -3,6 +3,8 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${SOFTWARE_DIR:?SOFTWARE_DIR is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
+: "${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
 cd ${PROJECT_ROOT}/hd_gwas/genotypes
@@ -23,7 +25,7 @@ samples_chunk=$work_dir/tmp/chunk/sample_chunk_
 out_prefix=$work_dir/umd50ks_HolrePan
 
 chr_set=29
-SBATCH_ACCOUNT=${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset}
+SBATCH_ACCOUNT=${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset - see config.sh.example}
 nthreads=$SLURM_CPUS_PER_TASK
 
 beagle=${SOFTWARE_DIR}/beagle.06Aug24.a91.jar
@@ -119,7 +121,7 @@ panref_prefix=${PROJECT_ROOT}/sbcp_imp/genotypes/ref_Holre_pangenie-var/ref_outp
 
 samples_chunk=$work_dir/tmp/chunk/sample_chunk_
 chr_set=29
-SBATCH_ACCOUNT=${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset}
+SBATCH_ACCOUNT=${SBATCH_ACCOUNT:?SBATCH_ACCOUNT is unset - see config.sh.example}
 nthreads=$SLURM_CPUS_PER_TASK
 
 beagle=${SOFTWARE_DIR}/beagle.06Aug24.a91.jar

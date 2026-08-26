@@ -5,8 +5,6 @@
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
-
 cd ${PROJECT_ROOT}/imputation/6.cds.check
 
 

@@ -3,9 +3,9 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${SCRATCH_DIR:?SCRATCH_DIR is unset - see config.sh.example at the repository root}"
+: "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
+: "${SLURM_PARTITION:?SLURM_PARTITION is unset - see config.sh.example at the repository root}"
 # --------------------------
-
-
 
 cd ${PROJECT_ROOT}/hd_gwas/1.svImpCompWGS
 

@@ -5,7 +5,6 @@
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
 set -eu
 
 

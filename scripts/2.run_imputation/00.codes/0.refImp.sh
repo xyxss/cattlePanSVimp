@@ -6,7 +6,6 @@
 : "${SOFTWARE_DIR:?SOFTWARE_DIR is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
 set -eu
 
 chr=$1

@@ -4,7 +4,6 @@
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-
 ${PROJECT_ROOT}/pangenie_WGS/cdcb_bam/
 
 

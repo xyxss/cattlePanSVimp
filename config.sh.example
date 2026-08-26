@@ -11,6 +11,10 @@
 # --- Scheduler ---------------------------------------------------------------
 # Slurm account charged for submitted jobs (sbatch -A).
 export SLURM_ACCOUNT="your_slurm_account"
+
+# Slurm partition/queue to submit to. The published runs used a partition named
+# "atlas" on USDA SCINet; set this to whatever your cluster provides.
+export SLURM_PARTITION="your_partition"
 export SBATCH_ACCOUNT="$SLURM_ACCOUNT"
 
 # --- Project layout ----------------------------------------------------------
