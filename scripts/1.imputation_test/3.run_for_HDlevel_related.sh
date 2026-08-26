@@ -3,6 +3,8 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
+: "${REF_CHR_MAP:?REF_CHR_MAP is unset - see config.sh.example at the repository root}"
+: "${BOVINEHD_MANIFEST:?BOVINEHD_MANIFEST is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
@@ -38,13 +40,13 @@ chmod +x ./filePath/utility_name
 
 wget https://hgdownload.soe.ucsc.edu/hubs/GCF/000/003/055/GCF_000003055.6/liftOver/GCF_000003055.6ToGCF_002263795.3.over.chain.gz
 
-#cat BovineHD_B1.csv | awk -F, '$9 == "UMD_3.1" && $10 > 0 {print "chr"$10"\t"$11"\t"$11}' > BovineHD.UMD_3.1.bed
+#cat ${BOVINEHD_MANIFEST} | awk -F, '$9 == "UMD_3.1" && $10 > 0 {print "chr"$10"\t"$11"\t"$11}' > BovineHD.UMD_3.1.bed
 
 cd ${PROJECT_ROOT}/hd_gwas
 
 # liftover =
 {
-cat BovineHD_B1.csv | awk -F, '$9 == "UMD_3.1" {print $10"\t"$11"\t"$2}' > BovineHD.UMD_3.1.pos
+cat ${BOVINEHD_MANIFEST} | awk -F, '$9 == "UMD_3.1" {print $10"\t"$11"\t"$2}' > BovineHD.UMD_3.1.pos
 
 awk 'FNR==NR{a[$1]=$2;next} {print a[$1]"\t"$2"\t"$2"\t"$3}' ${REF_DIR}/GCF_000003055.6_UMD3.1.chr.tr BovineHD.UMD_3.1.pos  | awk '$1 ~ "AC"' > BovineHD.GCF_000003055.6_UMD3.1.bed
 #775032
@@ -54,7 +56,7 @@ liftOver BovineHD.GCF_000003055.6_UMD3.1.bed GCF_000003055.6ToGCF_002263795.3.ov
 #ARS-UCD2.0.bed
 #774316
 
-awk 'FNR==NR{a[$2]=$1;next} {print a[$1]"\t"$2"\t"$2"\t"$4}' ${REF_DIR}/GCF_002263795.3_ARS-UCD2.0.chr.tr GCF_002263795.3_ARS-UCD2.0.bed  > ARS-UCD2.0.bed
+awk 'FNR==NR{a[$2]=$1;next} {print a[$1]"\t"$2"\t"$2"\t"$4}' ${REF_CHR_MAP} GCF_002263795.3_ARS-UCD2.0.bed  > ARS-UCD2.0.bed
 
 cat GCF_002263795.3_ARS-UCD2.0.bed | awk '{print $1"\t"$2}' > GCF_002263795.3_ARS-UCD2.0.pos
 }

@@ -4,6 +4,8 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
+: "${REF_FA:?REF_FA is unset - see config.sh.example at the repository root}"
+: "${REF_RM_DIR:?REF_RM_DIR is unset - see config.sh.example at the repository root}"
 : "${SOFTWARE_DIR:?SOFTWARE_DIR is unset - see config.sh.example at the repository root}"
 : "${CONDA_BASE:?CONDA_BASE is unset - see config.sh.example at the repository root}"
 # --------------------------
@@ -38,8 +40,8 @@ function main (){
 
 ## 
     ref_path=${REF_DIR}
-    ref_fa=$ref_path/ARS_UCD_v2.0.fa
-    ref_rm=${REF_DIR}/ARS_UCD_v2.0.ref_repeat
+    ref_fa=${REF_FA}
+    ref_rm=${REF_RM_DIR}
     ref_gff=${REF_DIR}/ARS_UCD_v2.0.ref_gff
 
     minimac4=${SOFTWARE_DIR}/minimac4-4.1.6-Linux-x86_64/bin/minimac4

@@ -95,6 +95,31 @@ You also need, alongside it:
 > assembly is ARS-UCD2.0 throughout. (By the usual UCSC convention `bosTau9`
 > means ARS-UCD1.2, which is **not** what is used here.)
 
+### Input files you have to supply
+
+Nothing in this repository produces these. Each is a variable in
+`config.sh.example`; the scripts abort naming the variable if it is unset, but
+they cannot tell you the file is missing until the step that reads it runs.
+
+| Variable | What it is | Where it comes from |
+|---|---|---|
+| `REF_FA` | ARS-UCD2.0 FASTA + `.fai` | [NCBI GCF_002263795.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002263795.3/) |
+| `REF_RM_DIR` | `rm.<CLASS>.bed` per repeat class | RepeatMasker over `REF_FA` |
+| `REF_CHR_MAP` | RefSeq accession → chromosome name | Built from the assembly report |
+| `SAMPLE_GROUP_TABLE` | `<sample_id>\t<group>`, no header | Your cohort. `scripts/sample.group.csv` is the published one, in CSV form |
+| `PANGENIE_VCF` | PanGenie graph genotypes, merged biallelic | Companion repo [cattleHolPanSV](https://github.com/xyxss/cattleHolPanSV), step 6 |
+| `DEEPVARIANT_VCF` | DeepVariant SNV calls, same cohort | Companion repo, step 4.2 |
+| `BOVINEHD_MANIFEST` | `BovineHD_B1.csv` | Illumina (registration required) |
+| `PHENO_DIR` | Phenotypes and PC covariates | **CDCB, restricted access — not redistributable** |
+
+The group labels in `SAMPLE_GROUP_TABLE` are matched by string in
+`1.imputation_prepare_data.sh` (`Holstein`, `Holstein-X-Jersey`, `Jersey`). If
+yours are spelled differently the cohorts come out empty rather than erroring.
+
+`SOFTWARE_DIR` additionally needs Beagle, Minimac4, Eagle, GCTA, EMMAX, and
+SLEMM, none of which install through `environment.yml` — see the comments in
+`config.sh.example` for versions and sources.
+
 ---
 
 ## Running the workflows

@@ -2,6 +2,7 @@
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${PHENO_DIR:?PHENO_DIR is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 : "${SLURM_PARTITION:?SLURM_PARTITION is unset - see config.sh.example at the repository root}"
 # --------------------------
@@ -102,9 +103,9 @@ nthreads=48
 pre_gdata=umd50ksWGS_HolrePan.filter
 out_pre=cdcb-umd50k_gwas
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=2
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
 
 for trait in Milk Fat Protein; do
 sbatch -A ${SLURM_ACCOUNT} \
@@ -125,9 +126,9 @@ nthreads=48
 pre_gdata=../allseq_1kbulls.hol.chrall.maf01
 out_pre=cdcb-umd50k_snpgwas
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=10
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
 
 for trait in Pro_Percent Milk Fat_Percent Fat Protein; do
 sbatch -A ${SLURM_ACCOUNT} \
@@ -149,9 +150,9 @@ nthreads=48
 pre_gdata=umd50ksLD_HolrePan.filter2
 out_pre=cdcb-umd50k_ldgwas
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=2
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
 
 for trait in Milk Fat Protein; do
 sbatch -A ${SLURM_ACCOUNT} \
@@ -174,48 +175,9 @@ nthreads=48
 pre_gdata=umd50ksWGSsv_HolrePan.filter
 out_pre=cdcb-umd50ksv_wgsgwas
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=10
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
-
-for trait in Milk Fat Protein; do
-sbatch -A ${SLURM_ACCOUNT} \
-        --job-name=${out_pre}_${trait}.GWAS \
-        --cpus-per-task=$nthreads \
-        --error=${out_pre}_${trait}.GWAS.err \
-        --output=${out_pre}_${trait}.GWAS.out \
-        --time "1-00:00:00" \
-        --wrap="
-bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
-    $pre_gdata $out_pre $trait $cov $pc $ph
-"
-
-cov=F
-pc=F
-
-sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \
-        --job-name=${out_pre}_${trait}.GCTA \
-        --cpus-per-task=$nthreads \
-        --error=${out_pre}_${trait}.GCTA.err \
-        --output=${out_pre}_${trait}.GCTA.out \
-        --time "1-00:00:00" \
-        --wrap="
-bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
-    $pre_gdata $out_pre $trait $cov $pc $ph
-"
-
-done
-
-
-cd ${PROJECT_ROOT}/hd_gwas/genotypes/5.svImp_svwgs
-
-nthreads=48
-pre_gdata=umd50ksWGSsv_HolrePan.filter
-out_pre=cdcb-umd50ksv_wgsgwas
-#trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
-pc=10
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
 
 for trait in Milk Fat Protein; do
 sbatch -A ${SLURM_ACCOUNT} \
@@ -252,9 +214,48 @@ nthreads=48
 pre_gdata=umd50ksWGSsv_HolrePan.filter
 out_pre=cdcb-umd50ksv_wgsgwas
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=10
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
+
+for trait in Milk Fat Protein; do
+sbatch -A ${SLURM_ACCOUNT} \
+        --job-name=${out_pre}_${trait}.GWAS \
+        --cpus-per-task=$nthreads \
+        --error=${out_pre}_${trait}.GWAS.err \
+        --output=${out_pre}_${trait}.GWAS.out \
+        --time "1-00:00:00" \
+        --wrap="
+bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
+    $pre_gdata $out_pre $trait $cov $pc $ph
+"
+
+cov=F
+pc=F
+
+sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \
+        --job-name=${out_pre}_${trait}.GCTA \
+        --cpus-per-task=$nthreads \
+        --error=${out_pre}_${trait}.GCTA.err \
+        --output=${out_pre}_${trait}.GCTA.out \
+        --time "1-00:00:00" \
+        --wrap="
+bash ${PROJECT_ROOT}/hd_gwas/genotypes/plink_gwas.sh \
+    $pre_gdata $out_pre $trait $cov $pc $ph
+"
+
+done
+
+
+cd ${PROJECT_ROOT}/hd_gwas/genotypes/5.svImp_svwgs
+
+nthreads=48
+pre_gdata=umd50ksWGSsv_HolrePan.filter
+out_pre=cdcb-umd50ksv_wgsgwas
+#trait=Milk
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
+pc=10
+ph=${PHENO_DIR}/hol.yld.pheno.phe2
 
 for trait in Milk Fat Protein; do
 

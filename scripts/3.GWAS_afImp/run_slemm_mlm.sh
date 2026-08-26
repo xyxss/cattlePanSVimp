@@ -3,6 +3,7 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${SCRATCH_DIR:?SCRATCH_DIR is unset - see config.sh.example at the repository root}"
+: "${PHENO_DIR:?PHENO_DIR is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 : "${SLURM_PARTITION:?SLURM_PARTITION is unset - see config.sh.example at the repository root}"
 # --------------------------
@@ -80,7 +81,7 @@ nthreads=42
 pre_gdata=umd50ksWGSsv_HolrePan.filter
 perl -e 'print "SNP\n"; while(<>) {@c=split /\s+/; print "$c[1]\n"}' < $pre_gdata.bim > $pre_gdata.snp_info.csv
 
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.grm
 
@@ -122,7 +123,7 @@ cd ${PROJECT_ROOT}/hd_gwas/genotypes/1.svImp_wgs
 nthreads=42
 pre_gdata=umd50ksWGS_HolrePan.filter
 #perl -e 'print "SNP\n"; while(<>) {@c=split /\s+/; print "$c[1]\n"}' < $pre_gdata.bim > $pre_gdata.snp_info.csv
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec
+cov=${PHENO_DIR}/hol.chip.maf01.eigenvec
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.grm
 

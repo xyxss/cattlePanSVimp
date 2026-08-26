@@ -2,10 +2,11 @@
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${PHENO_DIR:?PHENO_DIR is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
-cd ${PROJECT_ROOT}/hd_gwas/pheotypes
+cd ${PHENO_DIR}
 
  awk  'BEGIN{FS=OFS=","} FNR==NR{a[$1]=$2","$3","$4","$5;next} {print $0,a[$1]}' \
         ${PROJECT_ROOT}/hd_gwas/hol.type.pheno.csv \
@@ -14,39 +15,39 @@ cd ${PROJECT_ROOT}/hd_gwas/pheotypes
 
 cat ${PROJECT_ROOT}/hd_gwas/hol.yld.pheno.csv | 
         sed -e 's/,/\t/g' -e 's/1_HOL_IID/#IID/' > \
-        ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2
+        ${PHENO_DIR}/hol.yld.pheno.phe2
 
 cat ${PROJECT_ROOT}/hd_gwas/hol.type.pheno.csv | 
         sed -e 's/,/\t/g' -e 's/1_HOL_IID/#IID/' > \
-        ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.type.pheno.phe2
+        ${PHENO_DIR}/hol.type.pheno.phe2
 
 cat ${PROJECT_ROOT}/hd_gwas/hol.yld_type.pheno.csv | 
         sed -e 's/,/\t/g' -e 's/1_HOL_IID/#IID/' > \
-        ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld_type.pheno.phe2
+        ${PHENO_DIR}/hol.yld_type.pheno.phe2
 
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2 | 
+cat ${PHENO_DIR}/hol.yld.pheno.phe2 | 
     awk 'BEGIN{FS=OFS="\t"} NR > 1{print 0"\t"$1"\t"$2}' \
-    > ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.Milk
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2 | 
+    > ${PHENO_DIR}/hol.yld.pheno.Milk
+cat ${PHENO_DIR}/hol.yld.pheno.phe2 | 
     awk 'BEGIN{FS=OFS="\t"} NR > 1{print 0"\t"$1"\t"$4}' \
-    > ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.Fat
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2 | 
+    > ${PHENO_DIR}/hol.yld.pheno.Fat
+cat ${PHENO_DIR}/hol.yld.pheno.phe2 | 
     awk 'BEGIN{FS=OFS="\t"} NR > 1{print 0"\t"$1"\t"$6}' \
-    > ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.Protein
+    > ${PHENO_DIR}/hol.yld.pheno.Protein
 
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.type.pheno.phe2 | 
+cat ${PHENO_DIR}/hol.type.pheno.phe2 | 
     awk 'BEGIN{FS=OFS="\t"} NR > 1{print 0"\t"$1"\t"$2}' | awk '$3 != ""' \
-    > ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.Stature
+    > ${PHENO_DIR}/hol.yld.pheno.Stature
 
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.type.pheno.phe2 | 
+cat ${PHENO_DIR}/hol.type.pheno.phe2 | 
     awk 'BEGIN{FS=OFS="\t"} NR > 1{print 0"\t"$1"\t"$4}' | awk '$3 != ""' \
-    > ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.Body_depth
+    > ${PHENO_DIR}/hol.yld.pheno.Body_depth
 
 
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.phe2 | 
-    sed -e '1d' -e 's/^/0\t/g' > ${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.phen
-cat ${PROJECT_ROOT}/hd_gwas/pheotypes/hol.chip.maf01.eigenvec | 
-    sed -e '1d' -e 's/^/0\t/g' > ${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.10PCs
+cat ${PHENO_DIR}/hol.yld.pheno.phe2 | 
+    sed -e '1d' -e 's/^/0\t/g' > ${PHENO_DIR}/gcta.hol.phen
+cat ${PHENO_DIR}/hol.chip.maf01.eigenvec | 
+    sed -e '1d' -e 's/^/0\t/g' > ${PHENO_DIR}/gcta.hol.10PCs
 
 
 plink2 --threads 8 --vcf ../hol.chip.maf01.vcf.gz --chr-set 29 --const-fid --pca 10 --out hol.chip.maf01
@@ -60,7 +61,7 @@ pre_gdata=umd50ksWGS_HolrePan.filter
 out_pre=cdcb-umd50k_gwas_pc10
 pc=10
 nthreads=48
-phe=${PROJECT_ROOT}/hd_gwas/pheotypes/
+phe=${PHENO_DIR}/
 
 for trait in Pro_Percent Milk Fat_Percent Fat Protein; do
 sbatch -A ${SLURM_ACCOUNT} \

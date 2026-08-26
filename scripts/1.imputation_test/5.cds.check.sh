@@ -3,6 +3,7 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
+: "${REF_RM_DIR:?REF_RM_DIR is unset - see config.sh.example at the repository root}"
 # --------------------------
 
 cd ${PROJECT_ROOT}/imputation/6.cds.check
@@ -10,7 +11,7 @@ cd ${PROJECT_ROOT}/imputation/6.cds.check
 
 
 vcf=${PROJECT_ROOT}/imputation/1.holPub_imp/run_files/Holstein750_Thin0k_001.pangenie-snps.chr10.vcf.gz
-ref_rm=${REF_DIR}/ARS_UCD_v2.0.ref_repeat
+ref_rm=${REF_RM_DIR}
 ref_gff=${REF_DIR}/ARS_UCD_v2.0.ref_gff
 
 

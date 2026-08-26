@@ -32,17 +32,67 @@ export DATA_DIR="$DATA_ROOT/data"
 export SCRATCH_DIR="/path/to/your/scratch"
 
 # --- Reference genome --------------------------------------------------------
-# Must contain, for the assembly named in the README:
-#   ARS_UCD_v2.0.fa      + .fai
-#   ARS_UCD_v2.0.sdf     (rtg format, for `rtg vcfeval`)
-#   ARS_UCD_v2.0.ref_repeat/rm.<CLASS>.bed
-#   ARS_UCD_v2.0.ref_gff/gff.<FEATURE>.bed
+# Directory holding the reference assembly and its annotation sidecars.
 export REF_DIR="/path/to/your/reference"
 
+# Reference FASTA, plus a .fai index alongside it (samtools faidx).
+# Everything in this repository is built on ARS-UCD2.0. Substituting
+# ARS-UCD1.2 / bosTau9 will appear to work and produce wrong coordinates.
+export REF_FA="$REF_DIR/ARS_UCD_v2.0.fa"
+
+# RepeatMasker output split by class, one BED per class. Scripts read
+# $REF_RM_DIR/rm.<CLASS>.bed for CLASS in sv, del, ins, cpx, LINE, SINE, LTR.
+# Used to stratify Truvari and vcfeval benchmarks by repeat context.
+export REF_RM_DIR="$REF_DIR/ARS_UCD_v2.0.ref_repeat"
+
+# --- Required input files -----------------------------------------------------
+# These are read but never produced by anything in this repository. Each one
+# has to exist before the step that reads it will run.
+
+# Sample-to-group table. Tab-separated, no header: <sample_id>\t<group>.
+# The group column drives every cohort split in the benchmark
+# (Holstein, Holstein-X-Jersey, Jersey), so its spelling must match the
+# patterns in scripts/1.imputation_test/1.imputation_prepare_data.sh.
+# scripts/sample.group.csv is the published cohort in CSV form; this is the
+# tab-separated two-column form the scripts actually read.
+export SAMPLE_GROUP_TABLE="$PROJECT_ROOT/imputation/1.holPub_imp/holPub.samples.group"
+
+# PanGenie graph genotyping VCF, merged and biallelic. This is the panel the
+# whole imputation benchmark is built from, and it is the output of the
+# companion repository (cattleHolPanSV, step 6.WGS.PangenieSVgenotype.sh).
+export PANGENIE_VCF="$PROJECT_ROOT/pangenie_holPub/3.pan_all/hol-pg2hic-2024-05-22_graph_genotyping.merge-biallelic.vcf.gz"
+
+# DeepVariant SNV calls across the same cohort, used as the SNV truth set
+# when building the combined SV+SNP panels.
+export DEEPVARIANT_VCF="$PROJECT_ROOT/pangenie_holPub/4.deepv_all/ARS_UCD_v2.0.chr.fa.deepv-bi.vcf.gz"
+
+# Illumina BovineHD manifest (BovineHD_B1.csv), used to select HD-chip
+# positions. Distributed by Illumina; the UMD_3.1 coordinate columns are
+# lifted to ARS-UCD2.0 in scripts/1.imputation_test/3.run_for_HDlevel_related.sh.
+export BOVINEHD_MANIFEST="$DATA_DIR/BovineHD_B1.csv"
+
+# RefSeq-accession-to-chromosome-name table for the liftOver output.
+# Two columns: <chromosome_name>\t<GCF accession>.
+export REF_CHR_MAP="$REF_DIR/GCF_002263795.3_ARS-UCD2.0.chr.tr"
+
+# Phenotypes and covariates for the GWAS steps. CDCB predicted transmitting
+# abilities are restricted-access: they are NOT in this repository and cannot
+# be redistributed. Request them from CDCB directly.
+#   *.pheno.csv  - <sample_id> plus one column per trait
+#   *.eigenvec   - PLINK/GCTA principal components used as covariates
+export PHENO_DIR="$PROJECT_ROOT/hd_gwas/pheotypes"
+
 # --- Software ----------------------------------------------------------------
-# Third-party tools not installed through conda. Expected beneath it:
-#   beagle.06Aug24.a91.jar
-#   minimac4-4.1.6-Linux-x86_64/bin/minimac4
+# Third-party tools not installable through conda. None of these are vendored
+# here; install them yourself and keep the paths below pointing at them.
+# Expected beneath $SOFTWARE_DIR:
+#   beagle.06Aug24.a91.jar                        Beagle 5.4 imputation
+#   minimac4-4.1.6-Linux-x86_64/bin/minimac4      Minimac4 imputation
+#   Eagle_v2.4.1/eagle                            Eagle 2.4.1 phasing
+# Also referenced by the GWAS steps, and not covered by environment.yml:
+#   gcta64        GCTA 1.94.1     https://yanglab.westlake.edu.cn/software/gcta/
+#   emmax         EMMAX beta      https://genome.sph.umich.edu/wiki/EMMAX
+#   slemm         SLEMM           https://github.com/jiang18/slemm
 export SOFTWARE_DIR="$HOME/software"
 
 # Conda installation root (the directory containing etc/profile.d/conda.sh).

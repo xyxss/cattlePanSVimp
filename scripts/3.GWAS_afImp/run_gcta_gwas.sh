@@ -2,6 +2,7 @@
 # Copy config.sh.example to config.sh at the repository root, edit the paths,
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+: "${PHENO_DIR:?PHENO_DIR is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 : "${SLURM_PARTITION:?SLURM_PARTITION is unset - see config.sh.example at the repository root}"
 # --------------------------
@@ -123,12 +124,12 @@ cd ${PROJECT_ROOT}/hd_gwas/genotypes/1.svImp_wgs
 
 nthreads=16
 pre_gdata=umd50ksWGS_HolrePan.filter
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.10PCs
+cov=${PHENO_DIR}/gcta.hol.10PCs
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.sp_grm
 
 for trait in Milk Fat Protein; do
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.$trait
+ph=${PHENO_DIR}/hol.yld.pheno.$trait
 out_pre=cdcb-umd50k_gctaPc10fastmlm_$trait
 
 sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \
@@ -162,12 +163,12 @@ cd ${PROJECT_ROOT}/hd_gwas/genotypes/2.svImp_ld
 
 nthreads=16
 pre_gdata=umd50ksLD_HolrePan.filter2
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.10PCs
+cov=${PHENO_DIR}/gcta.hol.10PCs
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.sp_grm
 
 for trait in Milk Fat Protein; do
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.$trait
+ph=${PHENO_DIR}/hol.yld.pheno.$trait
 out_pre=cdcb-umd50k_gctaPc10fastmlm_$trait
 
 sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \
@@ -207,12 +208,12 @@ nthreads=16
 pre_gdata=umd50ksWGSsv_HolrePan.filter
 #out_pre=cdcb-umd50k_gcta2_Fat
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.10PCs
+cov=${PHENO_DIR}/gcta.hol.10PCs
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.sp_grm
 
 for trait in Milk Fat Protein; do
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.$trait
+ph=${PHENO_DIR}/hol.yld.pheno.$trait
 out_pre=cdcb-umd50ksv_gctaPc10fastmlm_$trait
 
 sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \
@@ -255,12 +256,12 @@ nthreads=16
 pre_gdata=umd50ksLDsv_HolrePan.filter
 #out_pre=cdcb-umd50k_gcta2_Fat
 #trait=Milk
-cov=${PROJECT_ROOT}/hd_gwas/pheotypes/gcta.hol.10PCs
+cov=${PHENO_DIR}/gcta.hol.10PCs
 pc=10
 grm=${PROJECT_ROOT}/hd_gwas/hol.chip.sp_grm
 
 for trait in Milk Fat Protein; do
-ph=${PROJECT_ROOT}/hd_gwas/pheotypes/hol.yld.pheno.$trait
+ph=${PHENO_DIR}/hol.yld.pheno.$trait
 out_pre=cdcb-umd50kldsv_gctaPc10fastmlm_$trait
 
 sbatch -A ${SLURM_ACCOUNT} --partition ${SLURM_PARTITION} \

@@ -4,6 +4,7 @@
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${DATA_ROOT:?DATA_ROOT is unset - see config.sh.example at the repository root}"
 : "${DATA_DIR:?DATA_DIR is unset - see config.sh.example at the repository root}"
+: "${SAMPLE_GROUP_TABLE:?SAMPLE_GROUP_TABLE is unset - see config.sh.example at the repository root}"
 : "${SLURM_ACCOUNT:?SLURM_ACCOUNT is unset - see config.sh.example at the repository root}"
 # --------------------------
 
@@ -34,7 +35,7 @@ cd ${PROJECT_ROOT}/hd_gwas/sv_gwas
 
 ### give reference for Hol and Hol-related samples
 vcf=${PROJECT_ROOT}/imputation/4.hd_imp/holPub.pangenie-svwgssnps.vcf.gz
-cat ${PROJECT_ROOT}/imputation/1.holPub_imp/holPub.samples.group | awk -F "\t" '$2 ~ "Holstein" {print $1}' > Holsteinandrelated.samples
+cat ${SAMPLE_GROUP_TABLE} | awk -F "\t" '$2 ~ "Holstein" {print $1}' > Holsteinandrelated.samples
 
 bcftools view --threads $nthreads $vcf \
     -S Holsteinandrelated.samples --force-samples \

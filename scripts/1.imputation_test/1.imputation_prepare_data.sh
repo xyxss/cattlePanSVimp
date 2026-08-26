@@ -3,11 +3,15 @@
 # then `source config.sh` before running this script.
 : "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
 : "${REF_DIR:?REF_DIR is unset - see config.sh.example at the repository root}"
+: "${REF_FA:?REF_FA is unset - see config.sh.example at the repository root}"
+: "${REF_RM_DIR:?REF_RM_DIR is unset - see config.sh.example at the repository root}"
+: "${PANGENIE_VCF:?PANGENIE_VCF is unset - see config.sh.example at the repository root}"
+: "${DEEPVARIANT_VCF:?DEEPVARIANT_VCF is unset - see config.sh.example at the repository root}"
 # --------------------------
 
 ref_path=${REF_DIR}
-ref_fa=$ref_path/ARS_UCD_v2.0.fa
-ref_rm=${REF_DIR}/ARS_UCD_v2.0.ref_repeat
+ref_fa=${REF_FA}
+ref_rm=${REF_RM_DIR}
 
 
 #### data preparation
@@ -132,7 +136,7 @@ cat holPub.samples.group | awk -F "\t" '$2 == "Jersey" {print $1}' | seeded_shuf
 cat Holstein250 HolsteinRelated250 Jersey250 > MultiBreed750
 
 # pangenie with all chromosomes
-vcf=${PROJECT_ROOT}/pangenie_holPub/3.pan_all/hol-pg2hic-2024-05-22_graph_genotyping.merge-biallelic.vcf.gz
+vcf=${PANGENIE_VCF}
 
 bcftools view --threads $nthreads -S holPub.samples \
     -i 'F_MISSING < 0.1 && AC > 0' $vcf |
@@ -148,7 +152,7 @@ bcftools view --threads $nthreads -S holPub.samples \
 
 # deepvariant with all chromosomes
 
-vcf2=${PROJECT_ROOT}/pangenie_holPub/4.deepv_all/ARS_UCD_v2.0.chr.fa.deepv-bi.vcf.gz
+vcf2=${DEEPVARIANT_VCF}
 bcftools view --threads $nthreads -S holPub.samples \
     -i 'F_MISSING < 0.1 && MAF > 0.01' $vcf2 |
     bcftools annotate --threads $nthreads --remove QUAL,INFO,FORMAT |
