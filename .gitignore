@@ -26,3 +26,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.zip
+
+# Local site configuration (never commit real paths)
+config.sh

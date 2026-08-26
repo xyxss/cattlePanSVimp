@@ -1,190 +1,299 @@
-# Cattle pangenome SV imputation workflows
+# cattlePanSVimp
 
-This repository contains the analysis scripts used for generating pangenome-based variant panels (SV and SNP subsets), running imputation experiments under multiple marker-density scenarios (LD / HD / WGS-SNP / RNA-SNP subsets), and downstream QC / population structure analyses (PCA, Fst, LD).
+Workflows for imputing pangenome-derived **structural variants** into cattle
+genotype data, and for running GWAS on the imputed panels.
 
-> **Note:** The original scripts were written for an HPC environment (Slurm) and include site-specific absolute paths.  
+Structural variants are largely invisible to the SNP arrays used in routine dairy
+genotyping. These scripts build combined SV+SNP reference panels from a
+Minigraph-Cactus pangenome, measure how accurately SVs can be imputed from four
+marker densities (LD chip, HD chip, WGS SNPs, RNA-seq SNPs), and then apply the
+resulting panels to association analysis.
 
-## What’s in this repo
+The SV panel itself is built in a companion repository,
+[cattleHolPanSV](https://github.com/xyxss/cattleHolPanSV).
 
-- `scripts_from_user/` – original HPC scripts (as provided)
-- `scripts_sanitized/` – the same scripts with paths replaced by placeholders
-- `docs/manuscript_snapshot.docx` – manuscript snapshot for context
-- `environment.yml` – Conda environment (bcftools/vcftools/plink2 + R)
-- `CITATION.cff` – citation metadata (edit `repository-code` after you create the GitHub repo)
+> **Scope.** This repository is code only. It was written for a Slurm HPC cluster,
+> and reproducing it end to end needs the input datasets listed under
+> [Data availability](#data-availability) plus substantial compute. Individual
+> stages are readable and reusable on their own.
 
-## Quick start
+---
 
-### 1) Create the environment
+## Repository layout
+
+```
+scripts/
+  1.imputation_test/     Benchmark: how accurately can SVs be imputed?
+  2.run_imputation/      Production: impute SVs into large cohorts
+  3.GWAS_afImp/          GWAS on the imputed genotypes
+  4.GWAS_valid_cdcb173WGS/  Validation GWAS against a 173-animal WGS set
+  sample.group.csv       Public accessions and breed labels for panel animals
+docs/
+  steps/                 Step-by-step walkthrough of individual scripts
+config.sh.example        Site paths - copy to config.sh and edit
+environment.yml          Conda environment
+```
+
+Each stage directory has a `00.codes/` subdirectory holding the AWK helpers and
+inner worker scripts that the numbered top-level scripts submit as jobs.
+
+---
+
+## Setup
+
+### 1. Conda environment
+
 ```bash
 conda env create -f environment.yml
 conda activate cattle-pan-sv-imp
 ```
 
-### 2) Set project paths
-Most scripts expect a working directory and a reference:
-```bash
-export PROJECT_ROOT=/path/to/your/project
-export WORK_DIR=$PROJECT_ROOT/work
-export REF_FA=$PROJECT_ROOT/ref/ARS_UCD_v2.0.fa
-```
+### 2. Site configuration
 
-### 3) Run the core steps (high level)
-
-1. **Prepare variant panels / subsets**  
-   - `2.0.imputation_prepare_data.sh`
-   - `2.1.subdata.vx.sh`
-
-2. **Imputation experiments**  
-   - LD-chip subset: `2.11.ld_imputation.sh`
-   - HD-chip subset: `2.10.hd_imputation.sh`
-   - WGS-SNP subset: `2.12.wgs_imputation.sh`
-   - RNA-SNP subset: `2.13.rna.sh`
-
-3. **Population structure / stratification checks**  
-   - PCA + Fst: `4.1.pca.sh`
-   - LD estimation workflows: `3.1.subdata.ld.sh`
-
-Because these scripts are HPC-oriented, typical usage is via `sbatch ... --wrap="bash <script> ..."` as shown within each script.
-
-
-## Step-by-step (script-by-script)
-
-If you prefer to reproduce the workflow one script at a time, start here:
-
-- `docs/steps/02_imputation_prepare_data.md`
-
-
-# Quickstart (example)
-
-This is a **minimal example** showing how to run the sanitized pipeline on your cluster.
-
-> The scripts in this repo are sanitized: you must replace placeholder paths and ensure required tools are available (module/conda/singularity).
-
-## 0) Create a conda environment (example)
+All cluster-specific paths live in one file, which is git-ignored:
 
 ```bash
-conda env create -f environment.yml
-conda activate cattleHolPanSV
+cp config.sh.example config.sh
+$EDITOR config.sh
+source config.sh
 ```
 
-## 1) Configure paths
+Every script asserts the variables it needs at the top and exits immediately
+with the missing variable's name if you haven't sourced it. Nothing writes to a
+default or guessed location.
 
-Most scripts expect variables like:
+### 3. Tools not available through conda
 
-- `work_dir` (project working directory)
-- `ref_fa` (reference FASTA)
-- input VCF(s) (SV/SNP panels)
-- sample groups (see `scripts/sample.group.csv`)
+Install these yourself and point `SOFTWARE_DIR` at them. Versions are the ones
+used for the published run:
 
-Edit the script you want to run and replace placeholders, for example:
+| Tool | Version | Used for |
+|---|---|---|
+| Beagle | `beagle.06Aug24.a91.jar` | Phasing and imputation (primary) |
+| Minimac4 | 4.1.6 | Imputation (comparison arm) |
+| GCTA | 1.94.1 | Mixed-model GWAS, COJO |
+| SLEMM | 0.90.1 | Mixed-model GWAS at scale |
+| EMMAX | (release used for validation GWAS) | Validation GWAS |
+| RTG Tools | — | `rtg vcfeval` concordance scoring |
 
-- `/PATH/TO/PROJECT`
-- `/PATH/TO/REF/bosTau9.fa`
-- `/PATH/TO/VCF/input.vcf.gz`
+### 4. Reference genome
 
-## 2) Prepare imputation benchmark inputs
+The workflows use **ARS-UCD2.0**, as `${REF_DIR}/ARS_UCD_v2.0.fa`.
+
+You also need, alongside it:
+
+- `ARS_UCD_v2.0.fa.fai`
+- `ARS_UCD_v2.0.sdf` — RTG-format reference, required by `rtg vcfeval`
+- `ARS_UCD_v2.0.ref_repeat/rm.<CLASS>.bed` — RepeatMasker classes, for
+  repeat-stratified accuracy
+- `ARS_UCD_v2.0.ref_gff/gff.<FEATURE>.bed` — genic features, for
+  annotation-stratified accuracy
+
+> **A naming caveat that trips people up:** inside the Minigraph-Cactus seqfile
+> the reference haplotype is *labelled* `bosTau9`, and that label propagates into
+> graph paths and some VCF sample columns. It is only a label. The underlying
+> assembly is ARS-UCD2.0 throughout. (By the usual UCSC convention `bosTau9`
+> means ARS-UCD1.2, which is **not** what is used here.)
+
+---
+
+## Running the workflows
+
+### Stage 1 — Imputation benchmark
+
+Establishes how well SV imputation works before trusting it on real cohorts.
 
 ```bash
 cd scripts/1.imputation_test
-bash 1.imputation_prepare_data.sh
+bash 1.imputation_prepare_data.sh     # filter panel, define cohorts, split by chromosome
+bash 2.split_data_Submit.sh           # cross-validation folds
 ```
 
-Expected outputs are written under your configured output directory and include:
-- filtered / subset VCFs
-- sample lists / folds
-- tabix indexes
-
-## 3) Run one benchmark scenario (HD as an example)
+Then run one or more marker-density scenarios. Each submits an array of Slurm
+jobs that call `00.codes/imp_all.sh`:
 
 ```bash
-cd scripts/1.imputation_test
-bash 3.run_for_HDlevel_related.sh
+bash 3.run_for_HDlevel_related.sh     # HD chip density
+bash 3.run_for_LDlevel_related.sh     # LD chip density
+bash 3.run_for_WGSlevel_related.sh    # WGS SNP density
+bash 3.run_for_RNAlevel_related.sh    # RNA-seq SNP density
 ```
 
-This submits multiple SLURM jobs (via `sbatch`) that call the core wrapper:
-- `scripts/1.imputation_test/00.codes/imp_all.sh`
+`imp_all.sh` splits training and validation samples, builds a Beagle reference,
+masks genotypes at set missingness rates, imputes, and scores the result with
+`rtg vcfeval` — broken out by genotype class, SV type, repeat class, and genic
+feature. Results accumulate in `<comp>.chr<N>.check.table2.GT.txt`.
 
-## 4) PCA / QC (optional)
+Optional QC:
 
 ```bash
-cd scripts/1.imputation_test
-bash 4.PCA.sh
+bash 4.PCA.sh          # PCA and Fst, to check population structure
+bash 5.cds.check.sh    # coding-sequence overlap checks
 ```
 
-## 5) GWAS on imputed data (optional)
+### Stage 2 — Production imputation
+
+```bash
+cd scripts/2.run_imputation
+bash run_imp.sh        # build the reference panel, then impute
+bash sub_imp.sh        # Slurm submission wrappers
+```
+
+`00.codes/run.imp.sh` is the driver: it splits the reference and target by
+chromosome, splits samples into chunks, runs Beagle per chunk, then merges back
+across chunks and chromosomes. This chunking is what makes cohorts of tens of
+thousands of animals tractable.
+
+### Stage 3 — GWAS on imputed genotypes
 
 ```bash
 cd scripts/3.GWAS_afImp
-bash 1.prepare_genotypes.sh
-bash 2.prepare_phenotypes.sh
-bash run_gcta_gwas.sh
+bash 1.prepare_genotypes.sh    # imputed VCF -> PLINK, filtered by MAF/R2
+bash 2.prepare_phenotypes.sh   # phenotypes and covariates
+bash run_slemm_mlm.sh          # or run_gcta_gwas.sh / run_plink_gwas.sh
 ```
 
-## Notes
+Four association engines are included so results can be compared across methods:
+SLEMM, GCTA (MLMA and fastGWA), PLINK, and EMMAX.
 
-- Many scripts run multiple jobs in parallel; check your scheduler limits.
-- For full reproducibility, pin tool versions (see `environment.yml`) and record seed values when sampling with `shuf`.
+### Stage 4 — Validation GWAS
 
+```bash
+cd scripts/4.GWAS_valid_cdcb173WGS
+bash data_pre.sh
+bash GWAS_emmax_cdcb.sh
+```
 
-# Script index (sanitized)
+Repeats the association analysis in a 173-animal sequenced set, to check that
+signals found on imputed genotypes hold up against directly sequenced ones.
 
-This repository contains sanitized SLURM/bash pipelines used in the project.
+---
 
-## Layout
-- `1.imputation_test/`: benchmark workflows (data prep, subset splits, HD/LD/WGS/RNA runs, PCA/QC)
-- `2.run_imputation/`: production/batch imputation runners
-- `3.GWAS_afImp/`: GWAS using imputed datasets (SLEMM/GCTA/PLINK)
-- `4.GWAS_valid_cdcb173WGS/`: validation GWAS on CDCB 173 WGS
+## Script index
 
-## Scripts
+### `1.imputation_test/`
 
 | Script | Purpose |
 |---|---|
-| `1.imputation_test/00.codes/imp_all.sh` | Core wrapper to run PanGenie-based genotyping/imputation on a given sample set and variant class. |
-| `1.imputation_test/00.codes/ld_sv.sh` | Compute LD metrics for SV/SNP panels (used for QC/summary). |
-| `1.imputation_test/1.imputation_prepare_data.sh` | Prepare VCF inputs, sample groups, and derived datasets for imputation benchmarks. |
-| `1.imputation_test/2.13.rna.sh` | Imputation/genotyping evaluation using RNA-seq–derived variants or RNA-based sample sets. |
-| `1.imputation_test/2.split_data_Submit.sh` | Split data into folds / subsets for benchmarking. |
-| `1.imputation_test/3.run_for_HDlevel_related.sh` | Submit/coordinate imputation benchmark runs for HD-level chip-like density. |
-| `1.imputation_test/3.run_for_LDlevel_related.sh` | Submit/coordinate imputation benchmark runs for LD-level chip-like density. |
-| `1.imputation_test/3.run_for_WGSlevel_related.sh` | Submit/coordinate imputation benchmark runs for WGS-level density. |
-| `1.imputation_test/4.PCA.sh` | Run PCA on selected genotype matrices / VCF-derived datasets. |
-| `1.imputation_test/5.cds.check.sh` | Coding-sequence or CDS-related checks on imputed variants (QC). |
-| `2.run_imputation/00.codes/0.refImp.sh` | Build reference indices/panels for imputation. |
-| `2.run_imputation/00.codes/run.imp.sh` | (to be documented) |
-| `2.run_imputation/00.codes/varImp.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `2.run_imputation/00.codes/varImp_chunk.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `2.run_imputation/00.codes/varImp_mchk.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `2.run_imputation/00.codes/varImp_mchr.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `2.run_imputation/run_imp.sh` | Batch submission wrappers for imputation jobs (Slurm). |
-| `2.run_imputation/sub_imp.sh` | Batch submission wrappers for imputation jobs (Slurm). |
-| `3.GWAS_afImp/00.codes/varImp.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `3.GWAS_afImp/00.codes/varImp_chunk.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `3.GWAS_afImp/00.codes/varImp_mchk.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `3.GWAS_afImp/00.codes/varImp_mchr.sh` | Variant imputation pipeline driver (chunked / multi-chrom / checks). |
-| `3.GWAS_afImp/1.prepare_genotypes.sh` | Convert imputed VCF/genotypes into GWAS-ready formats (plink/TPED, etc.). |
-| `3.GWAS_afImp/2.prepare_phenotypes.sh` | Clean/format phenotype tables and covariates for GWAS. |
-| `3.GWAS_afImp/run_SLEMM_CDCB173WGS_val.sh` | Run SLEMM mixed model GWAS / related analyses. |
-| `3.GWAS_afImp/run_SLEMM_afImpData.sh` | Run SLEMM mixed model GWAS / related analyses. |
-| `3.GWAS_afImp/run_gcta-mlma.sh` | Run GCTA GWAS/MLMA pipelines. |
-| `3.GWAS_afImp/run_gcta_gwas.sh` | Run GCTA GWAS/MLMA pipelines. |
-| `3.GWAS_afImp/run_plink_gwas.sh` | Run PLINK GWAS pipeline (baseline). |
-| `3.GWAS_afImp/run_slemm_mlm.sh` | Run SLEMM mixed model GWAS / related analyses. |
-| `4.GWAS_valid_cdcb173WGS/GWAS_emmax_cdcb.sh` | Run EMMAX GWAS (validation on CDCB 173 WGS). |
-| `4.GWAS_valid_cdcb173WGS/data_pre.sh` | Prepare validation dataset inputs for GWAS. |
+| `1.imputation_prepare_data.sh` | Filter the pangenome VCF, split by variant class, define benchmark cohorts, export per chromosome |
+| `2.split_data_Submit.sh` | Build cross-validation folds and subsets |
+| `3.run_for_HDlevel_related.sh` | Submit benchmark runs at HD-chip marker density |
+| `3.run_for_LDlevel_related.sh` | Submit benchmark runs at LD-chip marker density |
+| `3.run_for_WGSlevel_related.sh` | Submit benchmark runs at WGS-SNP density |
+| `3.run_for_RNAlevel_related.sh` | Submit benchmark runs using RNA-seq-derived SNPs |
+| `4.PCA.sh` | PCA and Fst across breed groups |
+| `5.cds.check.sh` | Coding-sequence overlap QC for imputed variants |
+| `00.codes/imp_all.sh` | Core worker: split, mask, impute, score one cohort × chromosome |
+| `00.codes/ld_sv.sh` | LD between SVs and nearby SNPs |
+| `00.codes/*.awk` | Helpers: VCF ID assignment, genotype masking, ploidy conversion, LD summaries |
 
+### `2.run_imputation/`
 
+| Script | Purpose |
+|---|---|
+| `run_imp.sh` | Top-level production imputation runner |
+| `sub_imp.sh` | Slurm submission wrappers |
+| `00.codes/0.refImp.sh` | Build and index the Beagle reference panel |
+| `00.codes/run.imp.sh` | Chunked driver: per-chromosome and per-sample-chunk Beagle, then merge |
+| `00.codes/varImp.sh` | Variant imputation driver |
+| `00.codes/varImp_chunk.sh` | Per-chunk variant imputation |
+| `00.codes/varImp_mchk.sh` | Merge across sample chunks |
+| `00.codes/varImp_mchr.sh` | Merge across chromosomes |
+
+### `3.GWAS_afImp/`
+
+| Script | Purpose |
+|---|---|
+| `1.prepare_genotypes.sh` | Imputed VCF to PLINK, MAF and imputation-R² filtering |
+| `2.prepare_phenotypes.sh` | Phenotype and covariate tables |
+| `run_slemm_mlm.sh` | SLEMM mixed-model GWAS |
+| `run_SLEMM_afImpData.sh` | SLEMM on the imputed panel |
+| `run_SLEMM_CDCB173WGS_val.sh` | SLEMM on the 173-animal WGS validation set |
+| `run_gcta_gwas.sh` | GCTA fastGWA |
+| `run_gcta-mlma.sh` | GCTA MLMA |
+| `run_plink_gwas.sh` | PLINK association (baseline) |
+| `phcor.awk` | Phenotype correlation helper |
+| `00.codes/varImp*.sh` | Imputation drivers reused by this stage |
+
+### `4.GWAS_valid_cdcb173WGS/`
+
+| Script | Purpose |
+|---|---|
+| `data_pre.sh` | Assemble the validation genotype and phenotype inputs |
+| `GWAS_emmax_cdcb.sh` | EMMAX GWAS on the validation set |
+
+---
+
+## Reproducibility notes
+
+**Random sampling is seeded.** Benchmark cohorts (`Holstein750`, `Holstein250`,
+`HolsteinRelated250`, `Jersey250`, and the `MultiBreed750` set built from the
+three 250-animal groups) are drawn with a seeded shuffle in
+`1.imputation_prepare_data.sh`, controlled by `SAMPLING_SEED` (default `1`, the
+value used for the published results). The genotype-masking AWK helpers use fixed
+`srand()` seeds. Changing any of these changes which animals and which genotypes
+enter the benchmark, and therefore the accuracy estimates.
+
+One caveat: seeded `shuf` is reproducible for a given GNU coreutils version, not
+guaranteed identical across major coreutils releases. Record your coreutils
+version alongside the seed if exact reproduction matters.
+
+**Version pinning.** `environment.yml` pins minimum versions. The externally
+installed tools are listed with exact versions in [Setup](#3-tools-not-available-through-conda).
+
+**Line endings.** All files are LF, enforced by `.gitattributes`. This matters:
+CRLF endings make `bash` fail to parse `function name (){` and leave stray `\r`
+characters in AWK fields and CSV columns.
+
+You can check every script parses before submitting anything:
+
+```bash
+find scripts -name '*.sh' -exec bash -n {} \;
+```
+
+### Known issues
+
+- `scripts/1.imputation_test/00.codes/imp_all.sh` calls `ref2minimac4` twice, in
+  two consecutive identical `if` blocks. It is idempotent, so results are
+  unaffected, but the second call is wasted work.
+- Three scripts do not currently parse and will fail immediately if run as-is.
+  They were used interactively, section by section, rather than executed top to
+  bottom:
+  - `scripts/3.GWAS_afImp/run_gcta_gwas.sh` — one `done` too many (line 292)
+  - `scripts/3.GWAS_afImp/run_plink_gwas.sh` — one `done` too many (line 207)
+  - `scripts/3.GWAS_afImp/1.prepare_genotypes.sh` — unclosed block (EOF at line 113)
+
+  The commands inside them are correct and were what produced the published
+  results; only the surrounding loop structure is unbalanced. Run the relevant
+  section directly, or repair the loop, before using them unattended.
+
+---
 
 ## Data availability
 
-The manuscript snapshot includes a data-availability statement pointing to a download portal for the imputation panel (see `docs/manuscript_snapshot.docx`, “Availability of data and material”).
+This repository holds **code only**. It contains no genotypes, phenotypes, or
+sequence data, and none should be added — see `CONTRIBUTING.md`.
 
-This GitHub repository is intended to host **code only**. Large datasets (VCF/BAM/CRAM, panels, etc.) should be hosted externally (e.g., institutional portal, NCBI/ENA, Zenodo, figshare) and linked from the README.
+- `scripts/sample.group.csv` lists public BioSample and BioProject accessions
+  with breed labels for the panel animals. These are public NCBI identifiers.
+- The imputation panel and other large files are distributed separately; see the
+  data availability statement in the manuscript.
+- CDCB-derived genotypes and phenotypes used in stages 3 and 4 are
+  **restricted-access** and cannot be redistributed here. Access requires an
+  agreement with the Council on Dairy Cattle Breeding.
 
-## How to cite
+---
 
-Update `CITATION.cff` with the final repository URL and (once available) the manuscript DOI.
+## Citation
+
+See `CITATION.cff`. If you use this code, please cite the accompanying
+manuscript once it is published.
+
+## License
+
+MIT — see `LICENSE`.
 
 ## Contact
 
-- Maintainer: Liu Yang
+Maintainer contact is listed in `CITATION.cff`. For questions about the
+workflows, please open an issue.

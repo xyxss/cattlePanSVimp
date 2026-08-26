@@ -2,8 +2,7 @@
 
 This step corresponds to the shell script:
 
-- `scripts/2.0.imputation_prepare_data.sh` (original HPC version)
-- `scripts_sanitized/2.0.imputation_prepare_data.sh` (public/sanitized version)
+- `scripts/1.imputation_test/1.imputation_prepare_data.sh`
 
 ## Goal
 
@@ -18,7 +17,7 @@ Create standardized, analysis-ready VCFs (split by variant class, filtered, opti
 - `ARS_UCD_v2.0.fa` (reference FASTA)
 - repeat annotation file used in some filtering steps (e.g., `ARS_UCD_v2.0.ref_repeat`)
 
-> The script expects these under `ref_path`. In the public version, replace with your own reference locations.
+> The script reads these from `${REF_DIR}`. Set it in `config.sh` (see `config.sh.example` at the repository root) and `source config.sh` before running.
 
 ### Sample grouping table
 - `holPub.samples.group` (tab-delimited)
@@ -70,7 +69,7 @@ Depending on which blocks you run, expected outputs include (names may vary):
 Example (adjust cpus/mem/time for your environment):
 
 ```bash
-sbatch -c 8 --mem=32G -t 24:00:00 scripts_sanitized/2.0.imputation_prepare_data.sh
+sbatch -c 8 --mem=32G -t 24:00:00 scripts/1.imputation_test/1.imputation_prepare_data.sh
 ```
 
 The script uses:
@@ -83,7 +82,7 @@ You can run interactively if you have `bcftools`, `vcftools`, `bgzip/tabix` avai
 
 ```bash
 export SLURM_CPUS_PER_TASK=8
-bash scripts_sanitized/2.0.imputation_prepare_data.sh
+bash scripts/1.imputation_test/1.imputation_prepare_data.sh
 ```
 
 ## Notes and common gotchas

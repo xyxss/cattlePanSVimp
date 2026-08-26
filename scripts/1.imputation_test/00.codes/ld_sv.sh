@@ -1,0 +1,40 @@
+#!/bin/bash
+# --- site configuration ---
+# Copy config.sh.example to config.sh at the repository root, edit the paths,
+# then `source config.sh` before running this script.
+: "${PROJECT_ROOT:?PROJECT_ROOT is unset - see config.sh.example at the repository root}"
+# --------------------------
+
+
+#set -o nounset
+#set -o errexit
+
+comp=$1
+chr=$2
+input_vcf_gz=$3
+nthreads=$SLURM_CPUS_PER_TASK
+#pangenieSV
+rtgNcpu=1
+
+
+####
+work_dir=${PROJECT_ROOT}/imputation/1.holPub_imp/ld_runs
+code=${PROJECT_ROOT}/imputation/1.holPub_imp/00.codes
+
+mkdir -p $work_dir/$comp/$comp.chr$chr
+cd $work_dir/$comp/$comp.chr$chr
+
+
+#plink2 --threads $nthreads --vcf $input_vcf_gz --freq --out ld.$chr.maf.out
+
+
+plink --threads $nthreads --vcf $input_vcf_gz \
+--const-fid 0 --r2 \
+--ld-window-kb 1000 \
+--ld-window-r2 0.05 \
+--out ld.$chr \
+--vcf-half-call m
+
+awk -f $code/plink_ld_extaTypes.awk ld.$chr.ld > $work_dir/$comp/$comp.chr$chr.ld.$chr.ld.ext
+awk '$9 !~ "snv-snv"'  $work_dir/$comp/$comp.chr$chr.ld.$chr.ld.ext > $work_dir/$comp/$comp.chr$chr.ld.$chr.ld.sv
+

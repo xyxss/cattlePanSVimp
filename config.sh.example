@@ -1,0 +1,50 @@
+# Site configuration for the cattlePanSVimp workflows.
+#
+#   cp config.sh.example config.sh
+#   # edit the paths below to match your system
+#   source config.sh
+#
+# config.sh is git-ignored, so your local paths never end up in a commit.
+# Every script in scripts/ fails immediately with a named variable if one of
+# these is unset, rather than silently writing to the wrong place.
+
+# --- Scheduler ---------------------------------------------------------------
+# Slurm account charged for submitted jobs (sbatch -A).
+export SLURM_ACCOUNT="your_slurm_account"
+export SBATCH_ACCOUNT="$SLURM_ACCOUNT"
+
+# --- Project layout ----------------------------------------------------------
+# Working root. All intermediate and output directories are created beneath it.
+# Needs to be on a filesystem with room for the full set of per-chromosome VCFs.
+export PROJECT_ROOT="/path/to/your/imputation/project"
+
+# Parent of PROJECT_ROOT, for the few scripts that reach outside it.
+export DATA_ROOT="/path/to/your/data/root"
+
+# Input datasets that are read but never written (chip genotypes, WGS panels).
+export DATA_DIR="$DATA_ROOT/data"
+
+# Fast scratch for job-local temporary files.
+export SCRATCH_DIR="/path/to/your/scratch"
+
+# --- Reference genome --------------------------------------------------------
+# Must contain, for the assembly named in the README:
+#   ARS_UCD_v2.0.fa      + .fai
+#   ARS_UCD_v2.0.sdf     (rtg format, for `rtg vcfeval`)
+#   ARS_UCD_v2.0.ref_repeat/rm.<CLASS>.bed
+#   ARS_UCD_v2.0.ref_gff/gff.<FEATURE>.bed
+export REF_DIR="/path/to/your/reference"
+
+# --- Software ----------------------------------------------------------------
+# Third-party tools not installed through conda. Expected beneath it:
+#   beagle.06Aug24.a91.jar
+#   minimac4-4.1.6-Linux-x86_64/bin/minimac4
+export SOFTWARE_DIR="$HOME/software"
+
+# Conda installation root (the directory containing etc/profile.d/conda.sh).
+export CONDA_BASE="$HOME/miniconda"
+
+# --- Reproducibility ---------------------------------------------------------
+# Seed for benchmark cohort sampling. The published analysis used 1.
+# Changing it selects different animals and yields different accuracy numbers.
+export SAMPLING_SEED=1
